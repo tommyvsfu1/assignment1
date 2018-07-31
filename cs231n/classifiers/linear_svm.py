@@ -134,7 +134,15 @@ def svm_loss_vectorized(W, X, y, reg):
   # scores = N x C matrix
   # margin = N x C matrix
   dW_Transpose = dW.T
-  margin[margin>=1]
+  margin_mask = (margin > 0)
+
+  # Use np.where to find margin_mask index
+  # add first, include correct_class, deal with it later 
+  #dW_Transpose[margin_mask_index[1]] = X[margin_mask_index[0]]
+
+  
+
+  margin_mask_sum = np.sum(margin_mask,axis=1)
 
 
   pass
