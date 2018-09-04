@@ -563,32 +563,44 @@ def conv_forward_naive(x, w, b, conv_param):
     H_hat = int(1 + (H + 2 * pad - HH) / stride)
     W_hat = int(1 + (W + 2 * pad - WW) / stride)
     ########################################
-    out = np.empty((num_train,filter_size,H_hat,W_hat))
+    out = np.zeros((num_train,filter_size,H_hat,W_hat))
+    test_type = {'1,2,3,4',5}
+    cache_out_index = np.empty(out.shape,dtype=type(test_type))
+    sliding_type = [3,2,[np.arange(5),np.arange(5)]]
+    sliding_window_index = np.empty(out.shape,dtype=type(sliding_type))
     for i in range(num_train):
         conv_data = x[i]
         # padding
         conv_data = np.pad(conv_data,((0,0),(pad,pad),(pad,pad)),'constant',constant_values=(0,0))
         new_H = conv_data.shape[1]
         new_W = conv_data.shape[2]
-        conv_filter = np.empty((filter_size,H_hat,W_hat))
+        conv_filter = np.zeros((filter_size,H_hat,W_hat))
         for F in range(filter_size):
             window_height_size = w.shape[2]
             window_width_size = w.shape[3]
             # sliding window
+            # Causion : You need to Slide the right direction(because I use reshape)
             dot_all = np.empty(0)
-            for idx in range(0,new_W-window_width_size+1,stride):
-                for idy in range(0,new_H-window_height_size+1,stride):
+            loop_index_out = 0
+            for idy in range(0,new_H-window_height_size+1,stride):
+                loop_index_in =0
+                for idx in range(0,new_W-window_width_size+1,stride):
+                    #Preserve the Sliding Window Shape
                     slide = conv_data[:,idy:idy+window_height_size,idx:idx+window_width_size]
-                    dot = np.sum(slide*w[F])
+                    sliding_ = [np.arange(idy,idy+window_height_size),np.arange(idx,idx+window_width_size)]
+                    sliding_window_index[i,F,loop_index_out,loop_index_in] = [i,F,sliding_]
+                    window_dot = slide*w[F]
+                    dot = np.sum(window_dot)
                     dot_all = np.append(dot_all,dot)
-            print("dot_all shape is",dot_all.shape)
+                    loop_index_in += 1
+                loop_index_out += 1                              
             dot_all = dot_all.reshape(H_hat,W_hat)
             conv_filter[F] = dot_all + b[F]
         out[i] = conv_filter 
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
-    cache = (x, w, b, conv_param)
+    cache = (x, w, b, conv_param, cache_out_index, sliding_window_index)
     return out, cache
 
 
@@ -609,7 +621,72 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+    ########################################
+    x, w, b, conv_param, cache_out_index, sliding_window_index = cache
+    dx = np.zeros(x.shape)
+    dw = np.zeros(w.shape)
+    db = np.zeros(b.shape)
+    layer_1, layer_2, layer_3, layer_4 = cache_out_index.shape
+    ########################################
+    pad = conv_param['pad']
+    stride = conv_param['stride']
+    ########################################
+    num_train = x.shape[0]
+    H = x.shape[2]
+    W = x.shape[3]
+    C = x.shape[1]
+    ########################################
+    HH = w.shape[2]
+    WW = w.shape[3]
+    filter_size = w.shape[0]
+    H_hat = int(1 + (H + 2 * pad - HH) / stride)
+    W_hat = int(1 + (W + 2 * pad - WW) / stride)
+    ########################################
+    # dx
+    dx_temp = np.copy(dx)
+    dx_temp = np.pad(dx_temp,((0,0),(0,0),(1,1),(1,1)),'constant',constant_values=(0,0))
+    for nn in range(x.shape[0]):
+        for ff in range(w.shape[0]):
+            for yy in range(dout.shape[2]):
+                for xx in range(dout.shape[3]):
+                    dx_zero = np.zeros(dx_temp.shape)
+                    num, fliter, index = sliding_window_index[nn,ff,yy,xx]
+                    offset_y = index[0][0]
+                    offset_x = index[1][0]
+                    for index_y in index[0]:
+                        for index_x in index[1]:
+                            for depth in range(C):
+                                dx_zero[num,depth,index_y,index_x] = w[fliter,depth,index_y-offset_y,index_x-offset_x] 
+                    dx_temp += dout[nn,ff,yy,xx]*dx_zero
+    dx = dx_temp[:, :, pad:pad+H, pad:pad+W]
+
+
+    # dW
+    x_pad = np.pad(x,((0,0),(0,0),(1,1),(1,1)),'constant',constant_values=(0,0))
+    for nn in range(x.shape[0]):
+        for ff in range(w.shape[0]):
+            for yy in range(dout.shape[2]):
+                for xx in range(dout.shape[3]):
+                    dw_zero = np.zeros(dw.shape)
+                    num, fliter, index = sliding_window_index[nn,ff,yy,xx]   
+                    offset_y = index[0][0]
+                    offset_x = index[1][0]               
+                    for index_y in index[0]:
+                        for index_x in index[1]:
+                            for depth in range(C):
+                                dw_zero[fliter,depth,index_y-offset_y,index_x-offset_x] += x_pad[num,depth,index_y,index_x]                   
+                    dw += dout[nn,ff,yy,xx]*dw_zero
+
+
+    # dB
+    for i in range(w.shape[0]):
+        for nn in range(x.shape[0]):
+            for ff in range(w.shape[0]):
+                if i == ff:
+                    db[i] += np.sum(dout[nn,ff])
+
+
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -639,7 +716,35 @@ def max_pool_forward_naive(x, pool_param):
     ###########################################################################
     # TODO: Implement the max-pooling forward pass                            #
     ###########################################################################
-    pass
+    pool_height = pool_param['pool_height']
+    pool_width = pool_param['pool_width']
+    stride = pool_param['stride']
+    N, C, H, W = x.shape
+    H_hat = int(1 + (H - pool_height) / stride)
+    W_hat = int(1 + (W - pool_width) / stride)
+
+    out = np.zeros((N,C,H_hat,W_hat))
+    pooling_backprop_index = np.empty((N,C,H_hat,W_hat),dtype=type([1,2,3,4]))
+    for num_train in range(N): # num_train
+        for channel_depth in range(C): # channel_depth
+            pool = np.empty(0)
+            counting_out = 0
+            for idy in range(0,H,stride):
+                counting_in =0
+                for idx in range(0,W,stride):
+                    slide = x[num_train,channel_depth,idy:idy+pool_height,idx:idx+pool_width]
+                    arg_max = np.unravel_index(np.argmax(slide, axis=None), slide.shape)
+                    arg_max_global = None
+                    arg_max_global = [num_train,channel_depth,idy+arg_max[0],idx+arg_max[1]]
+                    max_ = np.max(slide)
+                    pool = np.append(pool,max_)
+                    # print("arg_max_global",arg_max_global)
+                    pooling_backprop_index[num_train,channel_depth,int(counting_out),int(counting_in)] = arg_max_global
+                    counting_in+=1
+                counting_out+=1
+            pool = pool.reshape(H_hat,W_hat)
+            out[num_train,channel_depth] = pool
+    pool_param['pooling_index'] = pooling_backprop_index
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -662,7 +767,19 @@ def max_pool_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the max-pooling backward pass                           #
     ###########################################################################
-    pass
+    x, pool_param = cache
+    pooling_index = pool_param['pooling_index']
+    dx = np.zeros(x.shape)
+
+    N, F, H_hat, W_hat = dout.shape
+    for nn in range(N):
+        for ff in range(F):
+            for hh in range(H_hat):
+                for ww in range(W_hat):
+                    dx_temp = np.zeros(x.shape)
+                    a1, a2, a3, a4 = pooling_index[nn,ff,hh,ww]
+                    dx_temp[a1,a2,a3,a4] = dout[nn,ff,hh,ww]*1.0
+                    dx += dx_temp
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
