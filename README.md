@@ -2,20 +2,19 @@
 ### SVM
 CIFAR-10
 Linear SVM
-best validation accuracy achieved during cross-validation: 0.393000
-![](https://i.imgur.com/k833ky2.png)
-![](https://i.imgur.com/8M5uvm5.png)
-
-
+best validation accuracy achieved during cross-validation: 0.393000  
+  <img src="https://i.imgur.com/k833ky2.png" width="30%">
+  <img src="https://i.imgur.com/8M5uvm5.png" width="30%">
 ### FC
-*    Backpropogation
-![](https://i.imgur.com/2uNg81v.png)
-![](https://i.imgur.com/uBI2Cx8.png)
-![](https://i.imgur.com/lIDoLxi.png)
+*    **Backpropogation**
+
+  <img src="https://i.imgur.com/uBI2Cx8.png" width="40%">
+  <img src="https://i.imgur.com/lIDoLxi.png" width="30%">
+  <img src="https://i.imgur.com/2uNg81v.png" width="90%">
 
 
-Lab2
-#### CNN
+## Lab2
+### 1. CNN
 ![](https://i.imgur.com/UTTRWPu.png)
 (Epoch 1 / 1) train acc: 0.504000; val_acc: 0.499000
 
@@ -29,18 +28,18 @@ Lab2
 
 
 
-#### FC with different Update rules
-![](https://i.imgur.com/eVzGN6G.png)
-SGD_momentum
+### 2. FC with different Update rules
+  <img src="https://i.imgur.com/eVzGN6G.png" width="90%">
+
+#### SGD_momentum
 ![](https://i.imgur.com/BIRhkwU.png)
-RMS prop
+#### RMS prop
 ![](https://i.imgur.com/1EIuD1v.png)
-Adam
+#### Adam
 ![](https://i.imgur.com/IexqG3t.png)
-#### BatchNorm
-*    batchsize
+### 3. BatchNorm
 ![](https://i.imgur.com/RKczP7F.png)
-*    backpropogation
+##### backpropogation
 ![](https://i.imgur.com/n7rAEZL.png)
-#### Dropout
+### 4. Dropout
 ![](https://i.imgur.com/fKeBokF.png)
