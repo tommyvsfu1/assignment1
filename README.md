@@ -8,8 +8,7 @@ best validation accuracy achieved during cross-validation: 0.393000
 ### FC
 *    **Backpropogation**
   <img src="https://i.imgur.com/2uNg81v.png" width="50%">
-  <img src="https://i.imgur.com/uBI2Cx8.png" width="30%">
-  <img src="https://i.imgur.com/lIDoLxi.png" width="30%">
+  <img src="https://i.imgur.com/uBI2Cx8.png" width="30%"><img src="https://i.imgur.com/lIDoLxi.png" width="30%">
 
 
 
