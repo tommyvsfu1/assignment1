@@ -42,3 +42,14 @@ best validation accuracy achieved during cross-validation: 0.393000
 ![](https://i.imgur.com/n7rAEZL.png)
 ### 4. Dropout
 ![](https://i.imgur.com/fKeBokF.png)
+
+
+## Lab3
+
+### RNN
+#### BackPropogation
+![](https://i.imgur.com/alMA82M.png)
+
+### LSTM
+#### BackPropogation
+![](https://i.imgur.com/I51dSw5.png)
