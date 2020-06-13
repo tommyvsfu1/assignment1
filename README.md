@@ -28,7 +28,7 @@ best validation accuracy achieved during cross-validation: 0.393000
 
 
 
-### 2. FC with different Update rules
+### 2. SGD momentum, RMS prop, Adam
   <img src="https://i.imgur.com/eVzGN6G.png" width="90%">
 
 #### SGD_momentum
