@@ -3,7 +3,7 @@
 CIFAR-10
 Linear SVM
 best validation accuracy achieved during cross-validation: 0.393000
-![](https://i.imgur.com/k833ky2.png)
+  <img src="https://i.imgur.com/k833ky2.png" width="80%">
 ![](https://i.imgur.com/8M5uvm5.png)
 
 
